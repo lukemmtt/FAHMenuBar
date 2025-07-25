@@ -79,3 +79,6 @@ generate_sparkle_keys.swift
 *.key
 *.pem
 
+
+build/
+*.tmp
