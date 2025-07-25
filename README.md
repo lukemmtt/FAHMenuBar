@@ -1,129 +1,107 @@
-# FAHMenuBar - macOS App
+# FAH MenuBar - macOS Menubar App
 
-A modern macOS application using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
+A native macOS menubar app for Folding@home v8 that provides quick access to folding status and commands directly from your menu bar.
 
-## Project Architecture
+**What is Folding@home?** Folding@home is a distributed computing project that simulates protein folding to help research diseases like Alzheimer's, Huntington's, Parkinson's, and many cancers. Learn more at [foldingathome.org](https://foldingathome.org).
 
-```
-FAHMenuBar/
-├── FAHMenuBar.xcworkspace/              # Open this file in Xcode
-├── FAHMenuBar.xcodeproj/                # App shell project
-├── FAHMenuBar/                          # App target (minimal)
-│   ├── Assets.xcassets/                # App-level assets (icons, colors)
-│   ├── FAHMenuBarApp.swift              # App entry point
-│   ├── FAHMenuBar.entitlements          # App sandbox settings
-│   └── FAHMenuBar.xctestplan            # Test configuration
-├── FAHMenuBarPackage/                   # 🚀 Primary development area
-│   ├── Package.swift                   # Package configuration
-│   ├── Sources/FAHMenuBarFeature/       # Your feature code
-│   └── Tests/FAHMenuBarFeatureTests/    # Unit tests
-└── FAHMenuBarUITests/                   # UI automation tests
-```
+**⚠️ Disclaimer:** This utility and its author are **not affiliated with** the Folding@home project. This is an independent community tool.
 
-## Key Architecture Points
+**FAH MenuBar Screenshot**
 
-### Workspace + SPM Structure
-- **App Shell**: `FAHMenuBar/` contains minimal app lifecycle code
-- **Feature Code**: `FAHMenuBarPackage/Sources/FAHMenuBarFeature/` is where most development happens
-- **Separation**: Business logic lives in the SPM package, app target just imports and displays it
+<img width="341" height="374" alt="screenshot" src="https://github.com/user-attachments/assets/79a6b673-7e38-4ff3-91c2-bc8cbb9ddf8d" />
 
-### Buildable Folders (Xcode 16)
-- Files added to the filesystem automatically appear in Xcode
-- No need to manually add files to project targets
-- Reduces project file conflicts in teams
+## What is this?
 
-### App Sandbox
-The app is sandboxed by default with basic file access permissions. Modify `FAHMenuBar.entitlements` to add capabilities as needed.
+Folding@home for macOS only provides a web interface. This menubar app gives you quick native access to:
 
-## Development Notes
+- **View folding status** - See if you're actively folding or paused
+- **Pause/resume folding** - One-click folding commands
+- **Monitor progress** - Real-time progress bar and ETA for current work units
+- **Native macOS integration** - Lives in your menubar like other system tools
 
-### Code Organization
-Most development happens in `FAHMenuBarPackage/Sources/FAHMenuBarFeature/` - organize your code as you prefer.
+## Features
 
-### Public API Requirements
-Types exposed to the app target need `public` access:
-```swift
-public struct SettingsView: View {
-    public init() {}
-    
-    public var body: some View {
-        // Your view code
-    }
-}
-```
+- ✅ **Real-time status** - Shows current folding state and progress
+- ✅ **One-click commands** - Pause/resume folding instantly
+- ✅ **Progress tracking** - Visual progress bar with percentage and ETA
+- ✅ **Native design** - Matches macOS design language
+- ✅ **Lightweight** - Minimal resource usage
+- ✅ **Auto-updates** - Built-in Sparkle framework for easy updates
 
-### Adding Dependencies
-Edit `FAHMenuBarPackage/Package.swift` to add SPM dependencies:
-```swift
-dependencies: [
-    .package(url: "https://github.com/example/SomePackage", from: "1.0.0")
-],
-targets: [
-    .target(
-        name: "FAHMenuBarFeature",
-        dependencies: ["SomePackage"]
-    ),
-]
+## Requirements
+
+- macOS 14.0 (Sonoma) or later
+- Folding@home v8 client installed and running
+- Intel or Apple Silicon Mac
+
+## Installation
+
+### Option 1: Download Pre-built App (Recommended)
+
+1. **Download** the latest release from the [Releases page](https://github.com/lukemmtt/FAHMenuBar/releases)
+2. **Unzip** the downloaded file
+3. **Move** `FAH MenuBar.app` to your Applications folder
+4. **Launch** the app - it will appear in your menubar
+
+### Option 2: Build from Source
+
+```bash
+git clone https://github.com/lukemmtt/FAHMenuBar.git
+cd FAHMenuBar
+open FAHMenuBar.xcworkspace
+# Build and run from Xcode
 ```
 
-### Test Structure
-- **Unit Tests**: `FAHMenuBarPackage/Tests/FAHMenuBarFeatureTests/` (Swift Testing framework)
-- **UI Tests**: `FAHMenuBarUITests/` (XCUITest framework)
-- **Test Plan**: `FAHMenuBar.xctestplan` coordinates all tests
+## Usage
 
-## Configuration
+1. **Ensure Folding@home is running** - The menubar app connects to your local FAH client
+2. **Click the cube icon** in your menubar
+3. **View status** - See if you're folding, paused, or stopped
+4. **Use commands** - Click "Pause" or "Fold" to change your status
+5. **Monitor progress** - Watch the progress bar and ETA for current work units
 
-### XCConfig Build Settings
-Build settings are managed through **XCConfig files** in `Config/`:
-- `Config/Shared.xcconfig` - Common settings (bundle ID, versions, deployment target)
-- `Config/Debug.xcconfig` - Debug-specific settings  
-- `Config/Release.xcconfig` - Release-specific settings
-- `Config/Tests.xcconfig` - Test-specific settings
+## How it Works
 
-### App Sandbox & Entitlements
-The app is sandboxed by default with basic file access. Edit `FAHMenuBar/FAHMenuBar.entitlements` to add capabilities:
-```xml
-<key>com.apple.security.files.user-selected.read-write</key>
-<true/>
-<key>com.apple.security.network.client</key>
-<true/>
-<!-- Add other entitlements as needed -->
-```
+This app connects to Folding@home v8's official WebSocket API to:
+- Retrieve real-time folding status and work unit information
+- Send pause/resume/fold commands
+- Monitor progress and display updates in the menubar
 
-## macOS-Specific Features
+It does NOT:
+- Send data to external servers
+- Modify your FAH configuration files
+- Interfere with the normal operation of Folding@home
 
-### Window Management
-Add multiple windows and settings panels:
-```swift
-@main
-struct FAHMenuBarApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        
-        Settings {
-            SettingsView()
-        }
-    }
-}
-```
+## Troubleshooting
 
-### Asset Management
-- **App-Level Assets**: `FAHMenuBar/Assets.xcassets/` (app icon with multiple sizes, accent color)
-- **Feature Assets**: Add `Resources/` folder to SPM package if needed
+**App shows "Disconnected"**
+- Ensure Folding@home v8 is installed and running
+- Check that FAH is accessible at http://localhost:7396 in your browser
 
-### SPM Package Resources
-To include assets in your feature package:
-```swift
-.target(
-    name: "FAHMenuBarFeature",
-    dependencies: [],
-    resources: [.process("Resources")]
-)
-```
+**Commands don't work**
+- Make sure you're running Folding@home v8 (not v7)
+- Restart both the FAH client and this menubar app
 
-## Notes
+## Contributing
 
-### Generated with XcodeBuildMCP
-This project was scaffolded using [XcodeBuildMCP](https://github.com/cameroncooke/XcodeBuildMCP), which provides tools for AI-assisted macOS development workflows.
+This is an open-source community project. Contributions welcome!
+
+- **Report bugs** - Use GitHub Issues
+- **Request features** - Open a GitHub Issue with your idea
+- **Submit code** - Fork, make changes, and submit a Pull Request
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file for details.
+
+## About
+
+Created by [Luke Memet](https://github.com/lukemmtt) to provide macOS users with native Folding@home menubar access.
+
+**This tool is not affiliated with Folding@home**, but uses their official v8 API.
+
+---
+
+⭐ **Found this useful?** Give it a star on GitHub and share with other folders!
+
+🤝 **Want FAH to adopt this officially?** The code is MIT licensed with permissions for official adoption.
