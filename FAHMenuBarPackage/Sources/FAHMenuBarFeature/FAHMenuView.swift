@@ -9,6 +9,7 @@ public struct FAHMenuView: View {
     @State private var rotationAngle: Double = 0
     @State private var isViewActive = false
     @State private var isProcessingNotification = false
+    @State private var showingAbout = false
     
     public init() {}
     
@@ -50,9 +51,14 @@ public struct FAHMenuView: View {
                                 .foregroundColor(statusColor(for: state.statusText))
                             Spacer()
                             if state.totalPPD > 0 {
-                                Text("\(state.totalPPD) PPD")
-                                    .font(.caption)
-                                    .fontWeight(.medium)
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("\(state.totalPPD) PPD")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Text("\(Int(state.estimatedCreditsPerHour)) credits/hr")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                         
@@ -184,6 +190,8 @@ public struct FAHMenuView: View {
                     .buttonStyle(.link)
                     .font(.caption)
                     .fontWeight(.medium)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 4)
                     
                     Spacer()
                     
@@ -191,8 +199,6 @@ public struct FAHMenuView: View {
                         Button("Start at Login: \(autoLaunchEnabled ? "On" : "Off")") {
                             toggleAutoLaunch()
                         }
-                        
-                        Divider()
                         
                         Button("Check for Updates") {
                             // Access updater through app delegate using NSApplication
@@ -202,6 +208,16 @@ public struct FAHMenuView: View {
                                     appDelegate.perform(selector)
                                 }
                             }
+                        }
+                        
+                        Divider()
+                        
+                        Button("Official Folding@home Project") {
+                            NSWorkspace.shared.open(URL(string: "https://foldingathome.org/")!)
+                        }
+                        
+                        Button("About FAHMenuBar") {
+                            showingAbout = true
                         }
                         
                         Divider()
@@ -216,7 +232,7 @@ public struct FAHMenuView: View {
                     }
                     .menuStyle(.borderlessButton)
                     .fixedSize()
-                    .frame(width: 30)
+                    .frame(width: 40, height: 32)
                 }
             }
             .padding(.horizontal)
@@ -224,6 +240,9 @@ public struct FAHMenuView: View {
             
         }
         .frame(width: 320)
+        .sheet(isPresented: $showingAbout) {
+            AboutView()
+        }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("FAHMenuBarPopoverDidShow"))) { _ in
             // Prevent duplicate processing
             guard !isProcessingNotification else { return }

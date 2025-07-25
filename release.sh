@@ -15,6 +15,10 @@ set -e
 
 echo "🚀 FAH MenuBar Release Script"
 
+# Get script directory and cd to project root FIRST
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
 # Pre-flight checks
 echo "🔍 Running pre-flight checks..."
 
@@ -32,10 +36,6 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
     echo "⚠️  Warning: Not on main branch (currently on $CURRENT_BRANCH)"
     echo "   Continuing anyway..."
 fi
-
-# Get script directory and cd to project root
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
 
 # Check if we're in the right directory
 if [ ! -f "FAHMenuBar.xcworkspace/contents.xcworkspacedata" ]; then
@@ -127,6 +127,11 @@ sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" Config/Sh
 sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $NEW_BUILD/" Config/Shared.xcconfig
 
 echo "✅ Updated version numbers (v$NEW_VERSION build $NEW_BUILD)"
+
+# Commit version changes immediately
+echo "💾 Committing version bump..."
+git add Config/Shared.xcconfig
+git commit -m "Bump version to $NEW_VERSION build $NEW_BUILD"
 
 # Archive the app
 echo "📦 Archiving app..."
@@ -270,13 +275,10 @@ if ! grep -q "<sparkle:version>$NEW_VERSION</sparkle:version>" appcast.xml; then
 fi
 echo "✅ appcast.xml updated successfully"
 
-# Commit changes
-echo "💾 Committing version bump and appcast update..."
-git add Config/Shared.xcconfig appcast.xml
-git commit -m "Release version $NEW_VERSION
-
-- Bump version to $NEW_VERSION
-- Update appcast.xml for auto-update"
+# Commit appcast changes
+echo "💾 Committing appcast update..."
+git add appcast.xml
+git commit -m "Update appcast.xml for release $NEW_VERSION"
 
 # Create and push tag
 echo "🏷️  Creating tag..."

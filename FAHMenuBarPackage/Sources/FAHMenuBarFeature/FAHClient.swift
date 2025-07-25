@@ -369,6 +369,11 @@ public struct ClientState {
     public var totalPPD: Int {
         units.reduce(0) { $0 + $1.ppd }
     }
+    
+    public var estimatedCreditsPerHour: Double {
+        // PPD = Points Per Day, so divide by 24 to get credits per hour
+        return Double(totalPPD) / 24.0
+    }
 }
 
 public struct FAHWorkUnit: Identifiable {
