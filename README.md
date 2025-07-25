@@ -1,23 +1,37 @@
-# FAH MenuBar - macOS Menubar App
+# FAH MenuBar - Native macOS Control for Folding@home
 
-A native macOS menubar app for Folding@home v8 that provides quick access to folding status and commands directly from your menu bar.
+*This is an independent utility, not affiliated with Folding@home.*
 
-**What is Folding@home?** Folding@home is a distributed computing project that simulates protein folding to help research diseases like Alzheimer's, Huntington's, Parkinson's, and many cancers. Learn more at [foldingathome.org](https://foldingathome.org).
+**Monitor and manage your [Folding@home](https://foldingathome.org) contributions directly from your menubar.** This lightweight native app provides instant access to your folding status, work unit progress, and quick controls - all without opening a web browser. See real-time updates, pause/resume with one click, and track your points per day right from macOS's menubar.
 
-**⚠️ Disclaimer:** This utility and its author are **not affiliated with** the Folding@home project. This is an independent community tool.
+A more convenient way to keep tabs on your contributions to disease research. Works seamlessly with your existing Folding@home v8 installation.
 
-**FAH MenuBar Screenshot**
+<img width="340" height="324" alt="470631464-6df35bef-8a1b-4de8-84ea-22942d2e448d" src="https://github.com/user-attachments/assets/5f4f123a-e738-46f1-ac78-703fc9704a69" />
 
-<img width="341" height="374" alt="screenshot" src="https://github.com/user-attachments/assets/79a6b673-7e38-4ff3-91c2-bc8cbb9ddf8d" />
+## Why FAH MenuBar?
 
-## What is this?
+Folding@home runs as a background service with a web-based control panel. FAH MenuBar provides a native macOS alternative that's always one click away in your menubar:
 
-Folding@home for macOS only provides a web interface. This menubar app gives you quick native access to:
+- **Instant Access** - No need to open a browser or remember URLs
+- **Real-time Monitoring** - See live updates of your work unit progress
+- **Quick Controls** - Pause/resume folding without leaving your current app
+- **Native Experience** - Designed to feel like part of macOS
 
-- **View folding status** - See if you're actively folding or paused
-- **Pause/resume folding** - One-click folding commands
-- **Monitor progress** - Real-time progress bar and ETA for current work units
-- **Native macOS integration** - Lives in your menubar like other system tools
+Everything you need to monitor and control Folding@home, right where you'd expect it on a Mac.
+
+## Background
+
+Folding@home has been moving away from native desktop applications in favor of their web-based interface across all platforms. While this approach has benefits, I believe the easier these tools are to use, the more likely people are to keep folding. The client software is [open source](https://github.com/FoldingAtHome/fah-client-bastet) and runs as a background service.
+
+FAH MenuBar provides native macOS menubar integration for this modern Folding@home setup - bringing the convenience that helps keep people engaged with the project.
+
+## Why I Built This
+
+I created FAH MenuBar because I believe Folding@home offers a simple but meaningful way for people to contribute their unused computing power to important medical research. When your computer would otherwise be idle, it can help scientists understand diseases and develop new treatments. This tool makes it easier to participate in that effort on macOS.
+
+---
+
+*New to Folding@home? It's a distributed computing project helping researchers understand protein folding to develop new therapeutics for diseases. Learn more at [foldingathome.org](https://foldingathome.org). The project is open source and uses frameworks like [GROMACS](https://gromacs.org) and [OpenMM](https://openmm.org/) for simulations.*
 
 ## Features
 
@@ -31,7 +45,7 @@ Folding@home for macOS only provides a web interface. This menubar app gives you
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- Folding@home v8 client installed and running
+- Folding@home v8 client installed and running (download from [foldingathome.org/start-folding](https://foldingathome.org/start-folding/))
 - Intel or Apple Silicon Mac
 
 ## Installation
@@ -54,7 +68,7 @@ open FAHMenuBar.xcworkspace
 
 ## Usage
 
-1. **Ensure Folding@home is running** - The menubar app connects to your local FAH client
+1. **Ensure Folding@home is installed and running** - Download from [foldingathome.org/start-folding](https://foldingathome.org/start-folding/) if you haven't already
 2. **Click the cube icon** in your menubar
 3. **View status** - See if you're folding, paused, or stopped
 4. **Use commands** - Click "Pause" or "Fold" to change your status
@@ -74,9 +88,9 @@ It does NOT:
 
 ## Troubleshooting
 
-**App shows "Disconnected"**
-- Ensure Folding@home v8 is installed and running
-- Check that FAH is accessible at http://localhost:7396 in your browser
+**App shows "Connection Failed"**
+- Ensure Folding@home v8 is installed and running - get it from [foldingathome.org/start-folding](https://foldingathome.org/start-folding/)
+- The FAH client must be running before launching this menubar app
 
 **Commands don't work**
 - Make sure you're running Folding@home v8 (not v7)
@@ -98,7 +112,7 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 Created by [Luke Memet](https://github.com/lukemmtt) to provide macOS users with native Folding@home menubar access.
 
-**This tool is not affiliated with Folding@home**, but uses their official v8 API.
+**This tool is not affiliated with Folding@home**, but uses their [official v8 API](https://github.com/FoldingAtHome/fah-client-bastet/discussions/215).
 
 ---
 
