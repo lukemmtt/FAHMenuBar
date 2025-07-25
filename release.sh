@@ -139,6 +139,8 @@ xcodebuild -workspace FAHMenuBar.xcworkspace \
     -scheme FAHMenuBar \
     -configuration Release \
     -archivePath build/FAHMenuBar.xcarchive \
+    ARCHS="arm64 x86_64" \
+    ONLY_ACTIVE_ARCH=NO \
     CODE_SIGN_STYLE=Manual \
     DEVELOPMENT_TEAM=Z7YQK9S6SZ \
     CODE_SIGN_IDENTITY="Developer ID Application: TimeFinder, LLC (Z7YQK9S6SZ)" \
