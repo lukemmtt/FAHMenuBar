@@ -10,7 +10,7 @@ PRODUCT_NAME = FAHMenuBar
 PRODUCT_DISPLAY_NAME = FAH MenuBar
 PRODUCT_BUNDLE_IDENTIFIER = com.lukememet.fahmenubar
 MARKETING_VERSION = 1.0.3
-CURRENT_PROJECT_VERSION = 15
+CURRENT_PROJECT_VERSION = 16
 
 // ==========================================
 // Platform Configuration

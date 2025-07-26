@@ -5,26 +5,28 @@
         <link>https://github.com/lukemmtt/FAHMenuBar</link>
         <description>Updates for FAH MenuBar - A native macOS menubar app for controlling Folding@home</description>
         <language>en</language>
-        <lastBuildDate>Sat, 26 Jul 2025 02:03:40 +0000</lastBuildDate>
+        <lastBuildDate>Sat, 26 Jul 2025 02:07:41 +0000</lastBuildDate>
 
         <item>
             <title>FAH MenuBar 1.0.3</title>
             <description><![CDATA[
                 <h3>What's New</h3>
                 <ul>
-                    <li>More Sparkle fixes</li>
+                    <li>Sparkle & entitlements fixes for auto-updater</li>
                 </ul>
             ]]></description>
-            <pubDate>Sat, 26 Jul 2025 02:03:40 +0000</pubDate>
-            <sparkle:version>15</sparkle:version>
+            <pubDate>Sat, 26 Jul 2025 02:07:41 +0000</pubDate>
+            <sparkle:version>16</sparkle:version>
             <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure 
                 url="https://github.com/lukemmtt/FAHMenuBar/releases/download/1.0.3/FAHMenuBar-1.0.3.zip"
-                length="1297411"
+                length="1297594"
                 type="application/octet-stream"
-                sparkle:edSignature="wozax0pcZMlyqOk3cwz/IrcZIRlKCQru0j15/0igi7B4IfvweJ3q1j3V/xFDlYSXS09F25fGoCHlcxReQsm8Cg==" />
+                sparkle:edSignature="5VMk+ir3epXgwD25BoAJLYz9AfUa0it9JRXPg3Zf6aQ91+f8Jy9R0Jqae5shuDa5kOjrC965oH5wz9vOreizBQ==" />
         </item>
+
+        
 
         
 
