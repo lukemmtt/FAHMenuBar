@@ -5,7 +5,28 @@
         <link>https://github.com/lukemmtt/FAHMenuBar</link>
         <description>Updates for FAH MenuBar - A native macOS menubar app for controlling Folding@home</description>
         <language>en</language>
-        <lastBuildDate>Fri, 25 Jul 2025 21:44:15 +0000</lastBuildDate>
+        <lastBuildDate>Sat, 26 Jul 2025 02:03:40 +0000</lastBuildDate>
+
+        <item>
+            <title>FAH MenuBar 1.0.3</title>
+            <description><![CDATA[
+                <h3>What's New</h3>
+                <ul>
+                    <li>More Sparkle fixes</li>
+                </ul>
+            ]]></description>
+            <pubDate>Sat, 26 Jul 2025 02:03:40 +0000</pubDate>
+            <sparkle:version>15</sparkle:version>
+            <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure 
+                url="https://github.com/lukemmtt/FAHMenuBar/releases/download/1.0.3/FAHMenuBar-1.0.3.zip"
+                length="1297411"
+                type="application/octet-stream"
+                sparkle:edSignature="wozax0pcZMlyqOk3cwz/IrcZIRlKCQru0j15/0igi7B4IfvweJ3q1j3V/xFDlYSXS09F25fGoCHlcxReQsm8Cg==" />
+        </item>
+
+        
 
         <item>
             <title>FAH MenuBar 1.0.2</title>
@@ -16,7 +37,7 @@
                 </ul>
             ]]></description>
             <pubDate>Fri, 25 Jul 2025 21:44:15 +0000</pubDate>
-            <sparkle:version>1.0.2</sparkle:version>
+            <sparkle:version>11</sparkle:version>
             <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure 
@@ -34,7 +55,7 @@
                 </ul>
             ]]></description>
             <pubDate>Fri, 25 Jul 2025 16:56:05 +0000</pubDate>
-            <sparkle:version>1.0.1</sparkle:version>
+            <sparkle:version>10</sparkle:version>
             <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure 
@@ -70,7 +91,7 @@
                 <p><strong>Requirements:</strong> macOS 14.0+ and Folding@home v8 client</p>
             ]]></description>
             <pubDate>Fri, 25 Jul 2025 12:00:00 +0000</pubDate>
-            <sparkle:version>1.0.0</sparkle:version>
+            <sparkle:version>9</sparkle:version>
             <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure 

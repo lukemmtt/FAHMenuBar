@@ -38,5 +38,7 @@
 	<string>vJHa4VgmqAhqiMseWts6cz90R58/Ag0zVaqkGggo6uw=</string>
 	<key>SUDisableUpdateSignatureVerification</key>
 	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
 </dict>
 </plist>

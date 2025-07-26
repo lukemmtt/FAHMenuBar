@@ -2,6 +2,7 @@
 set -e
 
 # Release script for FAH MenuBar
+# Usage: ./release.sh [version] "What's new description"
 # This script:
 # 1. Validates clean working directory
 # 2. Bumps the patch version (1.0.x -> 1.0.x+1) or uses specified version
@@ -14,6 +15,28 @@ set -e
 # 9. Creates GitHub release
 
 echo "🚀 FAH MenuBar Release Script"
+
+# Check for required whatsnew parameter
+if [ -z "$2" ] && [ -z "$1" ]; then
+    echo "❌ Error: What's new description is required"
+    echo "Usage: ./release.sh [version] \"What's new description\""
+    echo "   or: ./release.sh \"What's new description\" (auto-bumps version)"
+    exit 1
+elif [ -z "$2" ] && [ -n "$1" ] && ! [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # Single argument that's not a version number - treat as whatsnew
+    WHATSNEW="$1"
+    NEW_VERSION=""
+elif [ -z "$2" ] && [ -n "$1" ] && [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "❌ Error: What's new description is required"
+    echo "Usage: ./release.sh $1 \"What's new description\""
+    exit 1
+else
+    # Two arguments - version and whatsnew
+    NEW_VERSION="$1"
+    WHATSNEW="$2"
+fi
+
+echo "📝 What's new: $WHATSNEW"
 
 # Get script directory and cd to project root FIRST
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -43,9 +66,8 @@ if [ ! -f "FAHMenuBar.xcworkspace/contents.xcworkspacedata" ]; then
     exit 1
 fi
 
-# Allow version override via command line
-if [ -n "$1" ]; then
-    NEW_VERSION="$1"
+# Handle version specification
+if [ -n "$NEW_VERSION" ]; then
     echo "📌 Using specified version: $NEW_VERSION"
     
     # Validate version format
@@ -127,11 +149,6 @@ sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" Config/Sh
 sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $NEW_BUILD/" Config/Shared.xcconfig
 
 echo "✅ Updated version numbers (v$NEW_VERSION build $NEW_BUILD)"
-
-# Commit version changes immediately
-echo "💾 Committing version bump..."
-git add Config/Shared.xcconfig
-git commit -m "Bump version to $NEW_VERSION build $NEW_BUILD"
 
 # Archive the app
 echo "📦 Archiving app..."
@@ -222,15 +239,24 @@ cd - > /dev/null
 FILE_SIZE=$(stat -f%z "FAHMenuBar-$NEW_VERSION.zip")
 echo "📏 File size: $FILE_SIZE bytes"
 
+# Generate Sparkle signature
+echo "🔏 Generating Sparkle signature..."
+SPARKLE_SIGNATURE=$(python3 sign_update.py "FAHMenuBar-$NEW_VERSION.zip" | tail -1 | cut -d' ' -f2)
+if [ -z "$SPARKLE_SIGNATURE" ]; then
+    echo "❌ Error: Failed to generate Sparkle signature"
+    exit 1
+fi
+echo "✅ Signature generated: ${SPARKLE_SIGNATURE:0:20}..."
+
 # Update appcast.xml
 echo "📝 Updating appcast.xml..."
 CURRENT_DATE=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")
 
-# Check if version already exists in appcast
-if grep -q "<sparkle:version>$NEW_VERSION</sparkle:version>" appcast.xml; then
-    echo "⚠️  Version $NEW_VERSION already exists in appcast.xml, removing old entry..."
-    # Remove the existing entry for this version
-    perl -i -0pe "s|<item>.*?<sparkle:version>$NEW_VERSION</sparkle:version>.*?</item>||gs" appcast.xml
+# Check if version already exists in appcast and remove ALL entries for this version
+if grep -q "<title>FAH MenuBar $NEW_VERSION</title>" appcast.xml; then
+    echo "⚠️  Version $NEW_VERSION already exists in appcast.xml, removing all entries..."
+    # Remove ALL existing entries for this version (by title)
+    perl -i -0pe "s|<item>.*?<title>FAH MenuBar $NEW_VERSION</title>.*?</item>||gs" appcast.xml
 fi
 
 # Create temp file with new item
@@ -238,19 +264,20 @@ cat > appcast_item.tmp << EOF
         <item>
             <title>FAH MenuBar $NEW_VERSION</title>
             <description><![CDATA[
-                <h3>Bug Fixes and Improvements</h3>
+                <h3>What's New</h3>
                 <ul>
-                    <li>Fixed Sparkle auto-update configuration</li>
+                    <li>$WHATSNEW</li>
                 </ul>
             ]]></description>
             <pubDate>$CURRENT_DATE</pubDate>
-            <sparkle:version>$NEW_VERSION</sparkle:version>
+            <sparkle:version>$NEW_BUILD</sparkle:version>
             <sparkle:shortVersionString>$NEW_VERSION</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure 
                 url="https://github.com/lukemmtt/FAHMenuBar/releases/download/$NEW_VERSION/FAHMenuBar-$NEW_VERSION.zip"
                 length="$FILE_SIZE"
-                type="application/octet-stream" />
+                type="application/octet-stream"
+                sparkle:edSignature="$SPARKLE_SIGNATURE" />
         </item>
 EOF
 
@@ -270,17 +297,17 @@ sed -i '' "s|<lastBuildDate>.*</lastBuildDate>|<lastBuildDate>$CURRENT_DATE</las
 # Clean up temp file
 rm -f appcast_item.tmp
 
-# Validate appcast has the new version
-if ! grep -q "<sparkle:version>$NEW_VERSION</sparkle:version>" appcast.xml; then
-    echo "❌ Error: Failed to update appcast.xml with version $NEW_VERSION"
+# Validate appcast has the new build
+if ! grep -q "<sparkle:version>$NEW_BUILD</sparkle:version>" appcast.xml; then
+    echo "❌ Error: Failed to update appcast.xml with build $NEW_BUILD"
     exit 1
 fi
 echo "✅ appcast.xml updated successfully"
 
-# Commit appcast changes
-echo "💾 Committing appcast update..."
-git add appcast.xml
-git commit -m "Update appcast.xml for release $NEW_VERSION"
+# Commit all release changes in one commit
+echo "💾 Committing release changes..."
+git add Config/Shared.xcconfig appcast.xml
+git commit -m "Release $NEW_VERSION (build $NEW_BUILD)"
 
 # Create and push tag
 echo "🏷️  Creating tag..."
@@ -294,7 +321,7 @@ gh release create "$NEW_VERSION" \
     --title "FAH MenuBar $NEW_VERSION" \
     --notes "## What's New
 
-- Minor bug fixes and performance improvements
+- $WHATSNEW
 
 ## Requirements
 - macOS 14.0 or later
