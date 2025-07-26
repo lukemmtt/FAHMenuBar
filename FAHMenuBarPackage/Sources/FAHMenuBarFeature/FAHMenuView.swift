@@ -212,10 +212,6 @@ public struct FAHMenuView: View {
                         
                         Divider()
                         
-                        Button("Official Folding@home Project") {
-                            NSWorkspace.shared.open(URL(string: "https://foldingathome.org/")!)
-                        }
-                        
                         Button("About FAHMenuBar") {
                             showingAbout = true
                         }
