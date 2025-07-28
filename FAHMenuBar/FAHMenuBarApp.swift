@@ -2,6 +2,7 @@ import SwiftUI
 import FAHMenuBarFeature
 import Sparkle
 import ServiceManagement
+import UserNotifications
 
 extension Notification.Name {
     static let popoverDidShow = Notification.Name("FAHMenuBarPopoverDidShow")
@@ -19,18 +20,23 @@ struct FAHMenuBarApp: App {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, UNUserNotificationCenterDelegate {
     var statusItem: NSStatusItem?
     var popover = NSPopover()
     private var updaterController: SPUStandardUpdaterController!
+    private var updaterUserDriverDelegate: UpdaterUserDriverDelegate!
     private var eventMonitor: Any?
     private var isPopoverVisible = false
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Initialize Sparkle updater
-        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        // Initialize gentle reminders delegate
+        updaterUserDriverDelegate = UpdaterUserDriverDelegate(appDelegate: self)
+        
+        // Initialize Sparkle updater with gentle reminders support
+        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: updaterUserDriverDelegate)
         
         setupMenuBar()
+        setupNotificationDelegate()
         checkFirstLaunch()
     }
     
@@ -47,6 +53,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.contentViewController = NSHostingController(rootView: FAHMenuView())
         popover.behavior = .transient
         popover.delegate = self
+    }
+    
+    func setupNotificationDelegate() {
+        UNUserNotificationCenter.current().delegate = self
     }
     
     // MARK: - NSPopoverDelegate
@@ -75,6 +85,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     
     func showRightClickMenu() {
         let menu = NSMenu()
+        
+        let updateItem = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit FAHMenuBar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
         
         statusItem?.menu = menu
@@ -166,5 +181,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     
     @objc func checkForUpdates() {
         updaterController.checkForUpdates(nil)
+    }
+    
+    
+    // MARK: - UNUserNotificationCenterDelegate
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.identifier == "fah-update-available" {
+            // User clicked on update notification - trigger update check
+            updaterController.checkForUpdates(nil)
+        }
+        completionHandler()
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Show notification even when app is in foreground
+        completionHandler([.banner, .sound])
     }
 }
