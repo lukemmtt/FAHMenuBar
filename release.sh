@@ -260,21 +260,30 @@ if grep -q "<title>FAH MenuBar $NEW_VERSION</title>" appcast.xml; then
     perl -i -0pe "s|<item>.*?<title>FAH MenuBar $NEW_VERSION</title>.*?</item>||gs" appcast.xml
 fi
 
-# Parse bullet points from WHATSNEW (split on " - " and create separate <li> elements)
+# Parse bullet points from WHATSNEW for both appcast (HTML <li>) and GitHub (markdown bullets)
 # Input:  "- Added feature A - Fixed bug B - Improved performance"
-# Output: <li>Added feature A</li>
-#         <li>Fixed bug B</li>
-#         <li>Improved performance</li>
+# Appcast Output: <li>Added feature A</li>
+#                 <li>Fixed bug B</li>
+#                 <li>Improved performance</li>
+# GitHub Output:  - Added feature A
+#                 - Fixed bug B
+#                 - Improved performance
+
 BULLET_ITEMS=""
+GITHUB_BULLETS=""
+
 if [[ "$WHATSNEW" == *" - "* ]]; then
-    # Split on " - " and create <li> elements using sed and while loop
+    # Split on " - " and create both HTML <li> elements and GitHub markdown bullets
     echo "$WHATSNEW" | sed 's/ - /\n/g' | while read -r bullet; do
         # Skip empty bullets and trim leading/trailing whitespace
         bullet=$(echo "$bullet" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
         if [ -n "$bullet" ]; then
             # Remove leading dash if it exists
             bullet=$(echo "$bullet" | sed 's/^-[[:space:]]*//')
+            # Write HTML format for appcast
             echo "                    <li>$bullet</li>" >> /tmp/bullet_items.tmp
+            # Write GitHub markdown format
+            echo "- $bullet" >> /tmp/github_bullets.tmp
         fi
     done
     # Read the generated bullet items
@@ -282,9 +291,14 @@ if [[ "$WHATSNEW" == *" - "* ]]; then
         BULLET_ITEMS=$(cat /tmp/bullet_items.tmp)
         rm -f /tmp/bullet_items.tmp
     fi
+    if [ -f /tmp/github_bullets.tmp ]; then
+        GITHUB_BULLETS=$(cat /tmp/github_bullets.tmp)
+        rm -f /tmp/github_bullets.tmp
+    fi
 else
     # Single bullet point
     BULLET_ITEMS="                    <li>$WHATSNEW</li>"
+    GITHUB_BULLETS="- $WHATSNEW"
 fi
 
 # Create temp file with new item
@@ -348,7 +362,7 @@ gh release create "$NEW_VERSION" \
     --title "FAH MenuBar $NEW_VERSION" \
     --notes "## What's New
 
-- $WHATSNEW
+$GITHUB_BULLETS
 
 ## Requirements
 - macOS 14.0 or later
