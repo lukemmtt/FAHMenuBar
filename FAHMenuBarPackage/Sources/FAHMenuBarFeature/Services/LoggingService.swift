@@ -21,6 +21,7 @@ public class LoggingService: LoggingServiceProtocol {
     }
     
     public func log(_ message: String, level: LogLevel = .info) {
+        #if DEBUG
         let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
         let logMessage = "[\(timestamp)] [\(level.rawValue.uppercased())] \(message)\n"
         
@@ -35,6 +36,7 @@ public class LoggingService: LoggingServiceProtocol {
                 try? data.write(to: logFile)
             }
         }
+        #endif
     }
 }
 
