@@ -260,6 +260,33 @@ if grep -q "<title>FAH MenuBar $NEW_VERSION</title>" appcast.xml; then
     perl -i -0pe "s|<item>.*?<title>FAH MenuBar $NEW_VERSION</title>.*?</item>||gs" appcast.xml
 fi
 
+# Parse bullet points from WHATSNEW (split on " - " and create separate <li> elements)
+# Input:  "- Added feature A - Fixed bug B - Improved performance"
+# Output: <li>Added feature A</li>
+#         <li>Fixed bug B</li>
+#         <li>Improved performance</li>
+BULLET_ITEMS=""
+if [[ "$WHATSNEW" == *" - "* ]]; then
+    # Split on " - " and create <li> elements using sed and while loop
+    echo "$WHATSNEW" | sed 's/ - /\n/g' | while read -r bullet; do
+        # Skip empty bullets and trim leading/trailing whitespace
+        bullet=$(echo "$bullet" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        if [ -n "$bullet" ]; then
+            # Remove leading dash if it exists
+            bullet=$(echo "$bullet" | sed 's/^-[[:space:]]*//')
+            echo "                    <li>$bullet</li>" >> /tmp/bullet_items.tmp
+        fi
+    done
+    # Read the generated bullet items
+    if [ -f /tmp/bullet_items.tmp ]; then
+        BULLET_ITEMS=$(cat /tmp/bullet_items.tmp)
+        rm -f /tmp/bullet_items.tmp
+    fi
+else
+    # Single bullet point
+    BULLET_ITEMS="                    <li>$WHATSNEW</li>"
+fi
+
 # Create temp file with new item
 cat > appcast_item.tmp << EOF
         <item>
@@ -267,8 +294,7 @@ cat > appcast_item.tmp << EOF
             <description><![CDATA[
                 <h3>What's New</h3>
                 <ul>
-                    <li>$WHATSNEW</li>
-                </ul>
+$BULLET_ITEMS                </ul>
             ]]></description>
             <pubDate>$CURRENT_DATE</pubDate>
             <sparkle:version>$NEW_BUILD</sparkle:version>
