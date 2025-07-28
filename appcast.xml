@@ -5,7 +5,27 @@
         <link>https://github.com/lukemmtt/FAHMenuBar</link>
         <description>Updates for FAH MenuBar - A native macOS menubar app for controlling Folding@home</description>
         <language>en</language>
-        <lastBuildDate>Sat, 26 Jul 2025 02:14:02 +0000</lastBuildDate>
+        <lastBuildDate>Mon, 28 Jul 2025 19:25:06 +0000</lastBuildDate>
+
+        <item>
+            <title>FAH MenuBar 1.1.0</title>
+            <description><![CDATA[
+                <h3>What's New</h3>
+                <ul>
+                    <li>Added support for multiple resource groups</li>
+                    <li>Improved auto-updater with update notifications</li>
+                    <li>Many other bug fixes & performance improvements</li>                </ul>
+            ]]></description>
+            <pubDate>Mon, 28 Jul 2025 19:25:06 +0000</pubDate>
+            <sparkle:version>18</sparkle:version>
+            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure 
+                url="https://github.com/lukemmtt/FAHMenuBar/releases/download/1.1.0/FAHMenuBar-1.1.0.zip"
+                length="1384132"
+                type="application/octet-stream"
+                sparkle:edSignature="+hBOgp3o7FxPo/SsGgSClB6vt71YWQlXswdzpDpmm2su2a0Wex3aK63aDcaGj3Bp19LgjrE+ELD72g+215URAw==" />
+        </item>
 
         <item>
             <title>FAH MenuBar 1.0.4</title>
