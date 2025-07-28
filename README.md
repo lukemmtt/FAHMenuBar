@@ -4,7 +4,7 @@
 
 **Not officially affiliated with Folding\@home.**
 
-<img width="324" height="361" alt="Screenshot 2025-07-25 at 1 17 06 PM" src="https://github.com/user-attachments/assets/dea19233-68dd-4772-84db-35004a73a472" />
+<img width="333" height="309" alt="Screenshot 2025-07-28 at 3 27 07 PM" src="https://github.com/user-attachments/assets/820cccac-079e-4f06-9cc2-d723b0641510" />
 
 ---
 
@@ -15,13 +15,13 @@ FAH MenuBar is a convenient macOS app that provides instant, native access to yo
 
 ## Features
 
-- ✅ **Instant Status:** View real-time folding status directly from your menubar.
-- ✅ **Quick Controls:** Pause/resume folding with a single click.
-- ✅ **Progress Tracking:** Visual progress bar with percentage and estimated completion time.
-- ✅ **Native macOS Design:** Blends seamlessly with your macOS interface.
-- ✅ **Resource-Friendly:** Minimal CPU and memory usage.
-- ✅ **Auto Updates:** Keeps itself up-to-date automatically via Sparkle.
-- ✅ **Privacy & Security:** No external data collection. No modification to your Folding@home installation.
+- 📊 **Real-time Monitoring:** View live folding status with visual progress bars, percentages, and completion estimates directly from your menubar.
+- ⚡ **Quick Controls:** Pause/resume/finish folding with a single click.
+- 🔧 **Supports Multiple Resource Groups:** Monitor and control all your configured Folding@home resource groups.
+- 🎨 **Native macOS Design:** Blends seamlessly with your macOS interface.
+- 🪶 **Resource-Friendly:** Minimal CPU and memory usage.
+- 🔄 **Auto Updates:** Keeps itself up-to-date automatically via Sparkle.
+- 🔒 **Privacy & Security:** No external data collection. No modification to your Folding@home installation.
 
 
 ## Why Use FAH MenuBar?
