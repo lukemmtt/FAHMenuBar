@@ -3,6 +3,7 @@ import AppKit
 
 public struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var debugSettings = DebugSettings.shared
     
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
@@ -48,7 +49,9 @@ public struct AboutView: View {
             // Links section
             HStack(spacing: 32) {
                 Button(action: {
-                    NSWorkspace.shared.open(URL(string: "https://github.com/lukemmtt/FAHMenuBar")!)
+                    if let url = URL(string: "https://github.com/lukemmtt/FAHMenuBar") {
+                        NSWorkspace.shared.open(url)
+                    }
                 }) {
                     VStack(spacing: 6) {
                         Image(systemName: "chevron.left.forwardslash.chevron.right")
@@ -62,7 +65,9 @@ public struct AboutView: View {
                 .buttonStyle(.plain)
                 
                 Button(action: {
-                    NSWorkspace.shared.open(URL(string: "https://foldingathome.org/")!)
+                    if let url = URL(string: "https://foldingathome.org/") {
+                        NSWorkspace.shared.open(url)
+                    }
                 }) {
                     VStack(spacing: 6) {
                         Image(systemName: "globe")
@@ -75,7 +80,30 @@ public struct AboutView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.bottom, 40)
+            .padding(.bottom, 32)
+            
+            // Debug Mode Toggle
+            VStack(spacing: 8) {
+                HStack {
+                    Toggle("Debug Mode", isOn: $debugSettings.isDebugModeEnabled)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Spacer()
+                }
+                
+                if debugSettings.isDebugModeEnabled {
+                    Text("Enables mock data for testing multiple resource groups")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.secondary.opacity(0.1))
+            .cornerRadius(8)
+            .padding(.bottom, 24)
             
             Spacer()
             

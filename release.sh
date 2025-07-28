@@ -56,8 +56,9 @@ fi
 # Check if we're on main branch
 CURRENT_BRANCH=$(git branch --show-current)
 if [ "$CURRENT_BRANCH" != "main" ]; then
-    echo "⚠️  Warning: Not on main branch (currently on $CURRENT_BRANCH)"
-    echo "   Continuing anyway..."
+    echo "❌ Error: Must be on main branch (currently on $CURRENT_BRANCH)"
+    echo "   Please switch to main branch before running release script"
+    exit 1
 fi
 
 # Check if we're in the right directory
