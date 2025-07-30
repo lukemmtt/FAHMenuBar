@@ -4,7 +4,10 @@
 
 **Not officially affiliated with Folding\@home.**
 
-<img width="333" height="309" alt="Screenshot 2025-07-28 at 3 27 07 PM" src="https://github.com/user-attachments/assets/820cccac-079e-4f06-9cc2-d723b0641510" />
+<p align="center">
+  <img width="333" height="309" alt="Screenshot 2025-07-28 at 3 27 07 PM" src="https://github.com/user-attachments/assets/820cccac-079e-4f06-9cc2-d723b0641510" />
+</p>
+
 
 ---
 
