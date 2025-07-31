@@ -2,7 +2,7 @@
 set -e
 
 # Release script for FAH MenuBar
-# Usage: ./release.sh [version] "What's new description"
+# Usage: ./release.sh [--dry-run] [version] "What's new description"
 # This script:
 # 1. Validates clean working directory
 # 2. Bumps the patch version (1.0.x -> 1.0.x+1) or uses specified version
@@ -16,11 +16,19 @@ set -e
 
 echo "🚀 FAH MenuBar Release Script"
 
+# Check for --dry-run flag
+DRY_RUN=false
+if [ "$1" = "--dry-run" ]; then
+    DRY_RUN=true
+    echo "🏃 DRY RUN MODE - No commits, pushes, or releases will be made"
+    shift # Remove --dry-run from arguments
+fi
+
 # Check for required whatsnew parameter
 if [ -z "$2" ] && [ -z "$1" ]; then
     echo "❌ Error: What's new description is required"
-    echo "Usage: ./release.sh [version] \"What's new description\""
-    echo "   or: ./release.sh \"What's new description\" (auto-bumps version)"
+    echo "Usage: ./release.sh [--dry-run] [version] \"What's new description\""
+    echo "   or: ./release.sh [--dry-run] \"What's new description\" (auto-bumps version)"
     exit 1
 elif [ -z "$2" ] && [ -n "$1" ] && ! [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     # Single argument that's not a version number - treat as whatsnew
@@ -28,7 +36,7 @@ elif [ -z "$2" ] && [ -n "$1" ] && ! [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; the
     NEW_VERSION=""
 elif [ -z "$2" ] && [ -n "$1" ] && [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "❌ Error: What's new description is required"
-    echo "Usage: ./release.sh $1 \"What's new description\""
+    echo "Usage: ./release.sh [--dry-run] $1 \"What's new description\""
     exit 1
 else
     # Two arguments - version and whatsnew
@@ -60,6 +68,24 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
     echo "   Please switch to main branch before running release script"
     exit 1
 fi
+
+# Check if we're up to date with upstream
+echo "🔄 Checking if main branch is up to date with upstream..."
+git fetch origin main --quiet
+LOCAL_COMMIT=$(git rev-parse HEAD)
+REMOTE_COMMIT=$(git rev-parse origin/main)
+
+if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+    echo "❌ Error: Local main branch is not up to date with origin/main"
+    echo "   Local:  $LOCAL_COMMIT"
+    echo "   Remote: $REMOTE_COMMIT"
+    echo ""
+    echo "   Please run: git pull origin main"
+    echo "   Then try the release script again"
+    exit 1
+fi
+
+echo "✅ Main branch is up to date with upstream"
 
 # Check if we're in the right directory
 if [ ! -f "FAHMenuBar.xcworkspace/contents.xcworkspacedata" ]; then
@@ -146,10 +172,13 @@ else
 fi
 
 # Update version in Shared.xcconfig
-sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" Config/Shared.xcconfig
-sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $NEW_BUILD/" Config/Shared.xcconfig
-
-echo "✅ Updated version numbers (v$NEW_VERSION build $NEW_BUILD)"
+if [ "$DRY_RUN" = false ]; then
+    sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" Config/Shared.xcconfig
+    sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $NEW_BUILD/" Config/Shared.xcconfig
+    echo "✅ Updated version numbers (v$NEW_VERSION build $NEW_BUILD)"
+else
+    echo "🏃 [DRY RUN] Would update version to v$NEW_VERSION build $NEW_BUILD"
+fi
 
 # Archive the app
 echo "📦 Archiving app..."
@@ -182,7 +211,7 @@ cat > build/ExportOptions.plist << EOF
     <string>manual</string>
     <key>provisioningProfiles</key>
     <dict>
-        <key>com.lukememet.FAHmenuBar</key>
+        <key>com.lukememet.fahmenubar</key>
         <string></string>
     </dict>
 </dict>
@@ -194,16 +223,24 @@ xcodebuild -exportArchive \
     -exportPath build/export \
     -exportOptionsPlist build/ExportOptions.plist
 
+# Note: com.apple.provenance attributes cannot be removed on macOS Ventura+
+# but they don't affect the final zip if we use the right flags
+
 # Create a timestamped folder for notarization
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 NOTARIZE_PATH="build/notarize_$TIMESTAMP"
 mkdir -p "$NOTARIZE_PATH"
-cp -R "build/export/FAHMenuBar.app" "$NOTARIZE_PATH/"
+
+# Copy to notarization folder
+echo "📋 Copying app bundle for notarization..."
+cp -R "build/export/FAHMenuBar.app" "$NOTARIZE_PATH/FAHMenuBar.app"
 
 # Create zip for notarization
 echo "🤐 Creating zip for notarization..."
 cd "$NOTARIZE_PATH"
-ditto -c -k --keepParent "FAHMenuBar.app" "../FAHMenuBar-$NEW_VERSION.zip"
+# Use ditto with --norsrc to create zip without ._ files
+# This excludes resource forks and extended attributes that cause issues
+ditto -c -k --norsrc --keepParent "FAHMenuBar.app" "../FAHMenuBar-$NEW_VERSION.zip"
 cd - > /dev/null
 
 # Notarize
@@ -230,10 +267,15 @@ fi
 echo "📎 Stapling notarization..."
 xcrun stapler staple "$NOTARIZE_PATH/FAHMenuBar.app"
 
+# Note: No need to clean attributes or re-sign after stapling
+# The notarization process handles this correctly
+
 # Create final distribution zip
 echo "📦 Creating distribution zip..."
 cd "$NOTARIZE_PATH"
-ditto -c -k --keepParent "FAHMenuBar.app" "../../FAHMenuBar-$NEW_VERSION.zip"
+# Use ditto with --norsrc to create a clean zip without ._ files
+# This ensures Windows/Linux compatibility and avoids signature issues
+ditto -c -k --norsrc --keepParent "FAHMenuBar.app" "../../FAHMenuBar-$NEW_VERSION.zip"
 cd - > /dev/null
 
 # Get file size for appcast
@@ -250,11 +292,15 @@ fi
 echo "✅ Signature generated: ${SPARKLE_SIGNATURE:0:20}..."
 
 # Update appcast.xml
-echo "📝 Updating appcast.xml..."
+if [ "$DRY_RUN" = false ]; then
+    echo "📝 Updating appcast.xml..."
+else
+    echo "🏃 [DRY RUN] Would update appcast.xml..."
+fi
 CURRENT_DATE=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")
 
 # Check if version already exists in appcast and remove ALL entries for this version
-if grep -q "<title>FAH MenuBar $NEW_VERSION</title>" appcast.xml; then
+if [ "$DRY_RUN" = false ] && grep -q "<title>FAH MenuBar $NEW_VERSION</title>" appcast.xml; then
     echo "⚠️  Version $NEW_VERSION already exists in appcast.xml, removing all entries..."
     # Remove ALL existing entries for this version (by title)
     perl -i -0pe "s|<item>.*?<title>FAH MenuBar $NEW_VERSION</title>.*?</item>||gs" appcast.xml
@@ -323,44 +369,62 @@ $BULLET_ITEMS                </ul>
 EOF
 
 # Insert new item after lastBuildDate
-perl -i -pe 'if (/<lastBuildDate>/) { 
-    print; 
-    print "\n"; 
-    open(ITEM, "appcast_item.tmp"); 
-    print while <ITEM>; 
-    close(ITEM); 
-    $_ = ""; 
-}' appcast.xml
+if [ "$DRY_RUN" = false ]; then
+    perl -i -pe 'if (/<lastBuildDate>/) { 
+        print; 
+        print "\n"; 
+        open(ITEM, "appcast_item.tmp"); 
+        print while <ITEM>; 
+        close(ITEM); 
+        $_ = ""; 
+    }' appcast.xml
 
-# Update lastBuildDate
-sed -i '' "s|<lastBuildDate>.*</lastBuildDate>|<lastBuildDate>$CURRENT_DATE</lastBuildDate>|" appcast.xml
+    # Update lastBuildDate
+    sed -i '' "s|<lastBuildDate>.*</lastBuildDate>|<lastBuildDate>$CURRENT_DATE</lastBuildDate>|" appcast.xml
+else
+    echo "🏃 [DRY RUN] Would insert new item into appcast.xml"
+fi
 
 # Clean up temp file
 rm -f appcast_item.tmp
 
 # Validate appcast has the new build
-if ! grep -q "<sparkle:version>$NEW_BUILD</sparkle:version>" appcast.xml; then
-    echo "❌ Error: Failed to update appcast.xml with build $NEW_BUILD"
-    exit 1
+if [ "$DRY_RUN" = false ]; then
+    if ! grep -q "<sparkle:version>$NEW_BUILD</sparkle:version>" appcast.xml; then
+        echo "❌ Error: Failed to update appcast.xml with build $NEW_BUILD"
+        exit 1
+    fi
+    echo "✅ appcast.xml updated successfully"
+else
+    echo "🏃 [DRY RUN] Would validate appcast.xml contains build $NEW_BUILD"
 fi
-echo "✅ appcast.xml updated successfully"
 
 # Commit all release changes in one commit
-echo "💾 Committing release changes..."
-git add Config/Shared.xcconfig appcast.xml
-git commit -m "Release $NEW_VERSION (build $NEW_BUILD)"
+if [ "$DRY_RUN" = false ]; then
+    echo "💾 Committing release changes..."
+    git add Config/Shared.xcconfig appcast.xml
+    git commit -m "Release $NEW_VERSION (build $NEW_BUILD)"
+else
+    echo "🏃 [DRY RUN] Would commit: Release $NEW_VERSION (build $NEW_BUILD)"
+fi
 
 # Create and push tag
-echo "🏷️  Creating tag..."
-git tag -a "$NEW_VERSION" -m "Version $NEW_VERSION"
-git push origin main
-git push origin "$NEW_VERSION"
+if [ "$DRY_RUN" = false ]; then
+    echo "🏷️  Creating tag..."
+    git tag -a "$NEW_VERSION" -m "Version $NEW_VERSION"
+    git push origin main
+    git push origin "$NEW_VERSION"
+else
+    echo "🏃 [DRY RUN] Would create tag: $NEW_VERSION"
+    echo "🏃 [DRY RUN] Would push to origin/main and tag"
+fi
 
 # Create GitHub release
-echo "🚀 Creating GitHub release..."
-gh release create "$NEW_VERSION" \
-    --title "FAH MenuBar $NEW_VERSION" \
-    --notes "## What's New
+if [ "$DRY_RUN" = false ]; then
+    echo "🚀 Creating GitHub release..."
+    gh release create "$NEW_VERSION" \
+        --title "FAH MenuBar $NEW_VERSION" \
+        --notes "## What's New
 
 $GITHUB_BULLETS
 
@@ -369,15 +433,42 @@ $GITHUB_BULLETS
 - Folding@home v8 client installed and running
 
 *This is an independent utility, not affiliated with Folding@home.*" \
-    "FAHMenuBar-$NEW_VERSION.zip" \
-    --draft=false
+        "FAHMenuBar-$NEW_VERSION.zip" \
+        --draft=false
+else
+    echo "🏃 [DRY RUN] Would create GitHub release: FAH MenuBar $NEW_VERSION"
+    echo "🏃 [DRY RUN] Would upload: FAHMenuBar-$NEW_VERSION.zip"
+fi
 
-echo "✅ Release $NEW_VERSION complete!"
+# Verify the final zip
 echo ""
-echo "📋 Summary:"
-echo "  - Version bumped from $CURRENT_VERSION to $NEW_VERSION"
-echo "  - App archived, exported, and notarized"
-echo "  - appcast.xml updated"
-echo "  - GitHub release created with download"
-echo ""
-echo "🎉 Users will now receive the update automatically!"
+echo "🔍 Verifying final zip..."
+if [ -f "verify-zip.sh" ]; then
+    ./verify-zip.sh "FAHMenuBar-$NEW_VERSION.zip" || echo "⚠️  Verification had issues"
+else
+    echo "⚠️  verify-zip.sh not found, skipping verification"
+fi
+
+if [ "$DRY_RUN" = true ]; then
+    echo ""
+    echo "✅ DRY RUN COMPLETE - Release $NEW_VERSION validated!"
+    echo ""
+    echo "📋 Summary:"
+    echo "  - Would bump version from $CURRENT_VERSION to $NEW_VERSION"
+    echo "  - App successfully archived, exported, and notarized"
+    echo "  - Would update appcast.xml"
+    echo "  - Would create GitHub release with download"
+    echo ""
+    echo "🎯 To perform actual release, run without --dry-run flag"
+else
+    echo ""
+    echo "✅ Release $NEW_VERSION complete!"
+    echo ""
+    echo "📋 Summary:"
+    echo "  - Version bumped from $CURRENT_VERSION to $NEW_VERSION"
+    echo "  - App archived, exported, and notarized"
+    echo "  - appcast.xml updated"
+    echo "  - GitHub release created with download"
+    echo ""
+    echo "🎉 Users will now receive the update automatically!"
+fi
